@@ -390,8 +390,11 @@ in {
         };
 
         followMouse = mkOption {
-          type = types.bool;
-          default = true;
+          type = if moduleName == "sway" then
+            types.enum [ "yes" "no" "always" ]
+          else
+            types.bool;
+          default = if moduleName == "sway" then "yes" else true;
           description = "Whether focus should follow the mouse.";
         };
 
