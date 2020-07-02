@@ -303,7 +303,7 @@ in {
       # cfg.settings is a list of Waybar configurations, we need to preserve the index for appropriate warnings
       allFaultyModules = flip imap1 cfg.settings (idx: settings:
         let
-          allModules = concatMap (x: attrByPath x [ ] settings) [
+          allModules = concatMap (x: attrByPath [ x ] [ ] settings) [
             "left"
             "center"
             "right"
