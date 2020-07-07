@@ -312,11 +312,11 @@ in {
             ]);
           declaredModules = attrNames settings.modules;
           # Modules declared in `modules` but not referenced in `modules-{left,center,right}`
-          unreferencedModules = subtractLists allModules (traceValSeq declaredModules);
+          unreferencedModules = subtractLists allModules declaredModules;
           # Modules listed in modules-{left,center,right} that are not default modules
-          nonDefaultModules = subtractLists defaultModuleNames (traceValSeq allModules);
+          nonDefaultModules = subtractLists defaultModuleNames allModules;
           # Modules referenced in `modules-{left,center,right}` but not declared in `modules`
-          undefinedModules = subtractLists (traceValSeq declaredModules) nonDefaultModules;
+          undefinedModules = subtractLists declaredModules nonDefaultModules;
           # Check for invalid module names
           invalidModuleNames = filter (m: ! isValidCustomModuleName m) (attrNames settings.modules);
         in {
