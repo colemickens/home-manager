@@ -292,8 +292,17 @@ in {
       mkUnreferencedModuleWarning = name:
         "The module '${name}' defined in '${modulesPath}' is not referenced "
         + "in either `modules-left`, `modules-center` or `modules-right` of Waybar's options";
-      mkUndefinedModuleWarning = name:
-        "The module '${name}' defined in '${modulesPath}' is neither "
+      mkUndefinedModuleWarning = settings: name: let
+        # Locations where the module is undefined (a combination modules-{left,center,right})
+        locations = flip filter [ "left" "center" "right" ] (x:
+          elem name settings."modules-${x}"
+        );
+        mkPath = loc: "'${modulesPath}-${loc}'";
+        # The modules-{left,center,right} configuration that includes
+        # an undefined module
+        path = concatMapStringsSep " and " mkPath locations;
+      in
+        "The module '${name}' defined in ${path} is neither "
         + "a default module or a custom module declared in '${modulesPath}'";
       mkInvalidModuleNameWarning = name:
         "The custom module '${name}' defined in '${modulesPath}' is not a valid "
@@ -320,16 +329,18 @@ in {
           # Check for invalid module names
           invalidModuleNames = filter (m: ! isValidCustomModuleName m) (attrNames settings.modules);
         in {
+          # The Waybar bar configuration (since config.settings is a list)
+          settings = settings;
           undef = undefinedModules ;
           unref = unreferencedModules;
           invalidName = invalidModuleNames;
         });
 
 
-      allWarnings = flip concatMap allFaultyModules ({ undef, unref, invalidName }:
+      allWarnings = flip concatMap allFaultyModules ({ settings, undef, unref, invalidName }:
         let
-          undefined = map mkUndefinedModuleWarning undef;
           unreferenced = map mkUnreferencedModuleWarning unref;
+          undefined = map (mkUndefinedModuleWarning settings) undef;
           invalid = map mkInvalidModuleNameWarning invalidName;
         in undefined ++ unreferenced ++ invalid);
     in allWarnings;
