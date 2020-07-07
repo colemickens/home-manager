@@ -66,7 +66,7 @@ in {
           "clock"
         ];
 
-        modules = { "sway/workspaces" = { all-outputs = true; }; };
+        modules = { "sway/workspaces".all-outputs = true; };
         #   "sway/mode" = { tooltip = false; };
         #   "sway/window" = { max-length = 120; };
         #   "idle_inhibitor" = { format = "{icon}"; };

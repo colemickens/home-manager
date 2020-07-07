@@ -6,7 +6,7 @@ let
   cfg = config.programs.waybar;
 
   # Used when generating warnings
-  modulesPath = "programs.waybar.settings.modules";
+  modulesPath = "programs.waybar.settings.[].modules";
 
   # Taken from <https://github.com/Alexays/Waybar/blob/adaf84304865e143e4e83984aaea6f6a7c9d4d96/src/factory.cpp>
   defaultModuleNames = [
@@ -26,6 +26,7 @@ let
     "mpd"
     "temperature"
     "bluetooth"
+    "battery"
   ];
 
   isValidCustomModuleName = x:
@@ -118,7 +119,7 @@ let
 
       # modules = modules-options;
       modules = mkOption {
-        type = addCheck attrs isValidModule;
+        type = attrs;
         default = { };
         description = "Modules configuration.";
         example = literalExample ''
@@ -133,7 +134,8 @@ let
               format = "hello {}";
               max-length = 40;
               interval = 10;
-              # You may be interested in using symlinkJoin to merge all scripts in one derivation
+              # If you have multiple scripts defined inline, you may be interested in
+              # using symlinkJoin to merge all scripts in one derivation
               # to have them all under one directory structure in the nix store
               exec = "''${pkgs.writers.writeBashBin "hello-from-waybar" '''
                 echo "from within waybar"
@@ -287,44 +289,49 @@ in {
     in writePrettyJSON "waybar-config.json" finalConfiguration;
 
     warnings = let
-      mkPath = idx:
-        let i = toString idx;
-        in "${modulesPath}[definition ${i}-entry ${i}]";
-      mkUnreferencedModuleWarning = idx: name:
-        "The module '${name}' defined in '${mkPath idx}' is not referenced "
+      mkUnreferencedModuleWarning = name:
+        "The module '${name}' defined in '${modulesPath}' is not referenced "
         + "in either `modules-left`, `modules-center` or `modules-right` of Waybar's options";
-      mkUndefinedModuleWarning = idx: name:
-        "The module '${name}' defined in '${mkPath idx}' is neither "
-        + "a default module or a custom module declared in '${
-          mkPath idx
-        }.modules'";
+      mkUndefinedModuleWarning = name:
+        "The module '${name}' defined in '${modulesPath}' is neither "
+        + "a default module or a custom module declared in '${modulesPath}'";
+      mkInvalidModuleNameWarning = name:
+        "The custom module '${name}' defined in '${modulesPath}' is not a valid "
+        + "module name. A custom module's name must start with 'custom/' "
+        + "like 'custom/mymodule' for instance";
 
       # Find all modules in `modules-{left,center,right}` and `modules` not declared/referenced.
       # cfg.settings is a list of Waybar configurations, we need to preserve the index for appropriate warnings
-      allFaultyModules = flip imap1 cfg.settings (idx: settings:
+      allFaultyModules = flip map cfg.settings (settings:
         let
-          allModules = concatMap (x: attrByPath [ x ] [ ] settings) [
-            "left"
-            "center"
-            "right"
-          ];
-          nonDefaultModules = subtractLists defaultModuleNames allModules;
+          allModules =
+            unique (concatMap (x: attrByPath [ "modules-${x}" ] [ ] settings) [
+              "left"
+              "center"
+              "right"
+            ]);
           declaredModules = attrNames settings.modules;
           # Modules declared in `modules` but not referenced in `modules-{left,center,right}`
-          unreferencedModules = subtractLists nonDefaultModules declaredModules;
+          unreferencedModules = subtractLists allModules (traceValSeq declaredModules);
+          # Modules listed in modules-{left,center,right} that are not default modules
+          nonDefaultModules = subtractLists defaultModuleNames (traceValSeq allModules);
           # Modules referenced in `modules-{left,center,right}` but not declared in `modules`
-          undefinedModules = subtractLists declaredModules nonDefaultModules;
+          undefinedModules = subtractLists (traceValSeq declaredModules) nonDefaultModules;
+          # Check for invalid module names
+          invalidModuleNames = filter (m: ! isValidCustomModuleName m) (attrNames settings.modules);
         in {
-          idx = idx;
-          undef = undefinedModules;
+          undef = undefinedModules ;
           unref = unreferencedModules;
+          invalidName = invalidModuleNames;
         });
 
-      allWarnings = flip concatMap allFaultyModules ({ idx, undef, unref }:
+
+      allWarnings = flip concatMap allFaultyModules ({ undef, unref, invalidName }:
         let
-          undefined = map (mkUndefinedModuleWarning idx) undef;
-          unreferenced = map (mkUnreferencedModuleWarning idx) unref;
-        in undefined ++ unreferenced);
+          undefined = map mkUndefinedModuleWarning undef;
+          unreferenced = map mkUnreferencedModuleWarning unref;
+          invalid = map mkInvalidModuleNameWarning invalidName;
+        in undefined ++ unreferenced ++ invalid);
     in allWarnings;
 
   in mkIf cfg.enable (mkMerge [
