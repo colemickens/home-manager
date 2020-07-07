@@ -241,6 +241,12 @@ let
     }
   '';
 
+  apply = p:
+    if isBool p then
+      (if p then "yes" else "no")
+    else
+      p;
+
   configFile = pkgs.writeText "sway.conf" ((if cfg.config != null then
     with cfg.config; ''
       font pango:${concatStringsSep ", " fonts}
@@ -253,7 +259,7 @@ let
       } ${toString floating.border}
       hide_edge_borders ${window.hideEdgeBorders}
       focus_wrapping ${if focus.forceWrapping then "yes" else "no"}
-      focus_follows_mouse ${if focus.followMouse then "yes" else "no"}
+      focus_follows_mouse ${apply focus.followMouse}
       focus_on_window_activation ${focus.newWindow}
       mouse_warping ${if focus.mouseWarping then "output" else "none"}
       workspace_layout ${workspaceLayout}
