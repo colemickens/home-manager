@@ -93,6 +93,7 @@ let
     (loadModule ./programs/matplotlib.nix { })
     (loadModule ./programs/mbsync.nix { })
     (loadModule ./programs/mcfly.nix { })
+    (loadModule ./programs/meli.nix { })
     (loadModule ./programs/mercurial.nix { })
     (loadModule ./programs/mpv.nix { })
     (loadModule ./programs/msmtp.nix { })
