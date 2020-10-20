@@ -157,6 +157,7 @@ let
     ./programs/mbsync.nix
     ./programs/mcfly.nix
     ./programs/mercurial.nix
+    ./programs/meli.nix
     ./programs/micro.nix
     ./programs/mise.nix
     ./programs/mpv.nix
