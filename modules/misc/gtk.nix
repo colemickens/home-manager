@@ -76,6 +76,12 @@ in {
         description = "The icon theme to use.";
       };
 
+      cursorTheme = mkOption {
+        type = types.nullOr themeType;
+        default = null;
+        description = "The cursor theme to use.";
+      };
+
       theme = mkOption {
         type = types.nullOr themeType;
         default = null;
@@ -148,6 +154,8 @@ in {
     } // optionalAttrs (cfg.theme != null) { gtk-theme-name = cfg.theme.name; }
       // optionalAttrs (cfg.iconTheme != null) {
         gtk-icon-theme-name = cfg.iconTheme.name;
+      } // optionalAttrs (cfg.cursorTheme != null) {
+        gtk-cursor-theme-name = cfg.cursorTheme.name;
       };
 
     dconfIni = optionalAttrs (cfg.font != null) {
@@ -158,13 +166,17 @@ in {
     } // optionalAttrs (cfg.theme != null) { gtk-theme = cfg.theme.name; }
       // optionalAttrs (cfg.iconTheme != null) {
         icon-theme = cfg.iconTheme.name;
+      }
+      // optionalAttrs (cfg.cursorTheme != null) {
+        icon-theme = cfg.cursorTheme.name;
       };
 
     optionalPackage = opt:
       optional (opt != null && opt.package != null) opt.package;
   in {
     home.packages = optionalPackage cfg.font ++ optionalPackage cfg.theme
-      ++ optionalPackage cfg.iconTheme;
+      ++ optionalPackage cfg.iconTheme
+      ++ optionalPackage cfg.cursorTheme;
 
     home.file.${cfg2.configLocation}.text =
       concatStringsSep "\n" (mapAttrsToList formatGtk2Option ini) + "\n"
