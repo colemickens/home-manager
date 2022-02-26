@@ -128,6 +128,7 @@ let
     ./programs/irssi.nix
     ./programs/java.nix
     ./programs/jetbrains-remote.nix
+    ./programs/jj.nix
     ./programs/jq.nix
     ./programs/jujutsu.nix
     ./programs/joshuto.nix
