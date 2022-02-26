@@ -193,6 +193,7 @@ let
     ./programs/pazi.nix
     ./programs/pet.nix
     ./programs/pidgin.nix
+    ./programs/pijul.nix
     ./programs/pistol.nix
     ./programs/piston-cli.nix
     ./programs/pls.nix
