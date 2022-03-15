@@ -35,7 +35,7 @@ in {
     eventModule = { ... }: {
       options = {
         event = mkOption {
-          type = types.enum [ "before-sleep" "after-resume" "lock" "unlock" ];
+          type = types.enum [ "before-sleep" "after-resume" "lock" "unlock" "hintidle" ];
           description = "Event name.";
         };
 
