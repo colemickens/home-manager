@@ -571,8 +571,11 @@ in
       destination = "/etc/profile.d/hm-session-vars.sh";
       text = ''
         # Only source this once.
-        if [ -n "$__HM_SESS_VARS_SOURCED" ]; then return; fi
-        export __HM_SESS_VARS_SOURCED=1
+        # colemickens: no, don't only source this once...
+        # it breaks shit
+        
+        #if [ -n "$__HM_SESS_VARS_SOURCED" ]; then return; fi
+        #export __HM_SESS_VARS_SOURCED=1
 
         ${config.lib.shell.exportAll cfg.sessionVariables}
       '' + lib.optionalString (cfg.sessionPath != [ ]) ''
