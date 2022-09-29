@@ -1,0 +1,3 @@
+sway services don't restart well
+swayidle doesn't restart when swaylock config changes
+etc
