@@ -342,5 +342,26 @@ in {
         ${cfg.extraConfig}
       '';
     };
-  };
+
+    (lib.mkIf cfg.systemd.enable {
+      systemd.user.services.mako = {
+        Unit = {
+          Description = "A lightweight Wayland notification daemon";
+          Documentation = "https://github.com/emersion/mako";
+          PartOf = [ "graphical-session.target" ];
+          BindsTo = [ "graphical-session.target" ];
+          After = [ "graphical-session.target" ];
+        };
+
+        Service = {
+          ExecStart = "${cfg.package}/bin/mako";
+          ExecReload = "kill -SIGUSR2 $MAINPID";
+          Restart = "on-failure";
+          KillMode = "mixed";
+        };
+
+        Install = { WantedBy = [ cfg.systemd.target ]; };
+      };
+    })
+  ]);
 }
