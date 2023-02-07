@@ -72,6 +72,14 @@ let
         '';
       };
 
+      adaptive_sync = mkOption {
+        type = types.nullOr (types.enum [ "enable" "disable" ]);
+        default = null;
+        description = ''
+          Enables or disables adaptive sync for the specified output.
+        '';
+      };
+
       mode = mkOption {
         type = types.nullOr types.str;
         default = null;
