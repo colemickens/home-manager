@@ -18,6 +18,18 @@ in {
         Mako, lightweight notification daemon for Wayland
       '';
 
+      systemd.enable = mkEnableOption ''
+        mako + systemd
+      '';
+      systemd.target = mkOption {
+        type = types.str;
+        default  = "graphical-session.target";
+        example = "sway-session.target";
+        description = ''
+          mako's systemd target
+        '';
+      };
+
       package = mkOption {
         type = types.package;
         default = pkgs.mako;
@@ -343,8 +355,8 @@ in {
       '';
     };
 
-    (lib.mkIf cfg.systemd.enable {
-      systemd.user.services.mako = {
+    systemd.user.services = lib.mkIf cfg.systemd.enable {
+      mako = {
         Unit = {
           Description = "A lightweight Wayland notification daemon";
           Documentation = "https://github.com/emersion/mako";
@@ -362,6 +374,6 @@ in {
 
         Install = { WantedBy = [ cfg.systemd.target ]; };
       };
-    })
-  ]);
+    };
+  };
 }
