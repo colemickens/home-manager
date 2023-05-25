@@ -243,6 +243,15 @@ in {
           ```
         '';
       };
+      
+      pinentryBinary = mkOption {
+        type = types.nullOr (types.path);
+        example = "\${pkgs.wayprompt}/bin/wayprompt-pinentry";
+        default = null;
+        description = ''
+          TODO: why
+        '';
+      };
 
       enableBashIntegration = mkEnableOption "Bash integration" // {
         default = true;
@@ -276,8 +285,8 @@ in {
           "max-cache-ttl ${toString cfg.maxCacheTtl}"
           ++ optional (cfg.maxCacheTtlSsh != null)
           "max-cache-ttl-ssh ${toString cfg.maxCacheTtlSsh}"
-          ++ optional (cfg.pinentryPackage != null)
-          "pinentry-program ${lib.getExe cfg.pinentryPackage}"
+          ++ optional (cfg.pinentryBinary != null)
+          "pinentry-program ${cfg.pinentryBinary}"
           ++ [ cfg.extraConfig ]);
 
       home.sessionVariablesExtra = optionalString cfg.enableSshSupport ''
