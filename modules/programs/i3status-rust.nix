@@ -8,11 +8,17 @@ let
 
   settingsFormat = pkgs.formats.toml { };
 
+  useNewConfig = cfg.forceNewConfig || lib.versionAtLeast cfg.package.version "0.30.0";
 in {
   meta.maintainers = with lib.maintainers; [ farlion thiagokokada ];
 
   options.programs.i3status-rust = {
     enable = mkEnableOption "a replacement for i3-status written in Rust";
+
+    forceNewConfig = mkOption {
+      type = types.bool;
+      default = false;
+    };
 
     bars = mkOption {
       type = types.attrsOf (types.submodule {
@@ -251,11 +257,11 @@ in {
         '';
 
         source = settingsFormat.generate ("config-${cfgFileSuffix}.toml") ({
-          theme = if lib.versionAtLeast cfg.package.version "0.30.0" then {
+          theme = if useNewConfig then {
             theme = cfgBar.theme;
           } else
             cfgBar.theme;
-          icons = if lib.versionAtLeast cfg.package.version "0.30.0" then {
+          icons = if useNewConfig then {
             icons = cfgBar.icons;
           } else
             cfgBar.icons;
