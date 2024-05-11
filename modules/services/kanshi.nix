@@ -344,6 +344,8 @@ in {
         else
           oldDirectivesStr;
 
+      home.packages = [ cfg.package ];
+
       systemd.user.services.kanshi = {
         Unit = {
           Description = "Dynamic output configuration";
@@ -357,6 +359,7 @@ in {
           Type = "simple";
           ExecStart = "${cfg.package}/bin/kanshi";
           Restart = "always";
+          RestartSec = 2;
         };
 
         Install = { WantedBy = [ cfg.systemdTarget ]; };
