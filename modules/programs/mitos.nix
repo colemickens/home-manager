@@ -13,18 +13,18 @@ let
     types
     ;
 
-  cfg = config.programs.helix;
+  cfg = config.programs.mitos;
   tomlFormat = pkgs.formats.toml { };
 in
 {
-  meta.maintainers = [ lib.maintainers.Philipp-M ];
+  # meta.maintainers = [ lib.maintainers.Philipp-M ];
 
-  options.programs.helix = {
-    enable = lib.mkEnableOption "helix text editor";
+  options.programs.mitos = {
+    enable = lib.mkEnableOption "mitos text editor";
 
-    package = lib.mkPackageOption pkgs "helix" {
+    package = lib.mkPackageOption pkgs "mitos" {
       nullable = true;
-      example = "pkgs.evil-helix";
+      example = "pkgs.evil-mitos";
     };
 
     extraPackages = mkOption {
@@ -39,7 +39,7 @@ in
       default = "";
       description = ''
         Extra lines to be appended to the config file.
-        Use this if you would like to maintain order for helix settings (eg. for minor modes)
+        Use this if you would like to maintain order for mitos settings (eg. for minor modes)
       '';
       example = literalExpression ''
         [keys.normal.g] # Reverse Alphabetical Order
@@ -79,9 +79,9 @@ in
       };
       description = ''
         Configuration written to
-        {file}`$XDG_CONFIG_HOME/helix/config.toml`.
+        {file}`$XDG_CONFIG_HOME/mitos/config.toml`.
 
-        See <https://docs.helix-editor.com/configuration.html>
+        See <FIXME>
         for the full list of options.
       '';
     };
@@ -108,9 +108,9 @@ in
       '';
       description = ''
         Language specific configuration at
-        {file}`$XDG_CONFIG_HOME/helix/languages.toml`.
+        {file}`$XDG_CONFIG_HOME/mitos/languages.toml`.
 
-        See <https://docs.helix-editor.com/languages.html>
+        See <FIXME>
         for more information.
       '';
     };
@@ -196,10 +196,10 @@ in
       '';
       description = ''
         Each theme is written to
-        {file}`$XDG_CONFIG_HOME/helix/themes/theme-name.toml`.
+        {file}`$XDG_CONFIG_HOME/mitos/themes/theme-name.toml`.
         Where the name of each attribute is the theme-name (in the example "base16").
 
-        See <https://docs.helix-editor.com/themes.html>
+        See <FIXME>
         for the full list of options.
       '';
     };
@@ -208,23 +208,23 @@ in
   config = mkIf cfg.enable {
     assertions = lib.singleton {
       assertion = cfg.extraPackages != [ ] -> cfg.package != null;
-      message = "programs.helix.extraPackages require programs.helix.package to not be null";
+      message = "programs.mitos.extraPackages require programs.mitos.package to not be null";
     };
 
-    warnings = lib.optional (lib.any builtins.isList options.programs.helix.languages.definitions) (
+    warnings = lib.optional (lib.any builtins.isList options.programs.mitos.languages.definitions) (
       lib.hm.deprecations.mkDeprecatedOptionValueWarning {
         option = [
           "programs"
-          "helix"
+          "mitos"
           "languages"
         ];
         old = "a list";
-        replacement = "`programs.helix.languages.language`";
+        replacement = "`programs.mitos.languages.language`";
         details = ''
           This option now generates the whole languages.toml file instead of just the language array in that file.
 
           Use:
-            programs.helix.languages = { language = <languages list>; }
+            programs.mitos.languages = { language = <languages list>; }
         '';
       }
     );
@@ -263,7 +263,7 @@ in
             hasExtraConfig = cfg.extraConfig != "";
           in
           {
-            "helix/config.toml" = mkIf (hasSettings || hasExtraConfig) {
+            "mitos/config.toml" = mkIf (hasSettings || hasExtraConfig) {
               inherit onChange;
               source =
                 let
@@ -272,30 +272,30 @@ in
                     lib.optionalString hasSettings "\n" + cfg.extraConfig
                   );
                 in
-                pkgs.runCommand "helix-config.toml" { } ''
+                pkgs.runCommand "mitos-config.toml" { } ''
                   cat ${configFile} ${extraConfigFile} >> $out
                 '';
             };
-            "helix/languages.toml" = mkIf (cfg.languages != { }) {
+            "mitos/languages.toml" = mkIf (cfg.languages != { }) {
               inherit onChange;
-              source = tomlFormat.generate "helix-languages-config" cfg.languages;
+              source = tomlFormat.generate "mitos-languages-config" cfg.languages;
             };
-            "helix/ignore" = mkIf (cfg.ignores != [ ]) {
+            "mitos/ignore" = mkIf (cfg.ignores != [ ]) {
               text = lib.concatStringsSep "\n" cfg.ignores + "\n";
             };
           };
 
         themes = lib.mapAttrs' (
           n: v:
-          lib.nameValuePair "helix/themes/${n}.toml" {
+          lib.nameValuePair "mitos/themes/${n}.toml" {
             inherit onChange;
             source =
               if lib.isString v then
-                pkgs.writeText "helix-theme-${n}" v
+                pkgs.writeText "mitos-theme-${n}" v
               else if builtins.isPath v || lib.isStorePath v then
                 v
               else
-                tomlFormat.generate "helix-theme-${n}" v;
+                tomlFormat.generate "mitos-theme-${n}" v;
           }
         ) cfg.themes;
       in
